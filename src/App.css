@@ -272,6 +272,13 @@ a:hover {
   margin-bottom: 10px;
   text-align: center;
 }
+.feedback--mini {
+  text-align: center;
+  padding: 14px 16px;
+}
+.feedback--mini .feedback-head {
+  margin-bottom: 0;
+}
 .feedback.good .feedback-head {
   color: var(--good);
 }

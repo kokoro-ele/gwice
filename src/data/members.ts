@@ -92,8 +92,11 @@ export const members: Member[] = [
     images: [
       "TWICE MOMO April 2024.jpg",
       "Momo from TWICE in Las Vegas (53594960167).jpg",
+      "20230817 Momo Hirai for Pearly Gates Korea 01.jpg",
+      "20230918 Momo Hirai (모모).jpg",
       "20230918 Momo Hirai 平井 もも 2023 09.jpg",
-      "20230918 Momo Hirai 平井 もも 2023 08.jpg",
+      "20230918 Momo Hirai 平井 もも 2023 01.png",
+      "Momo promoting Ready to Be album on SBS Radio.png",
       "Momo Hirai at Twice Sudden Attack Fan Meeting on March 25, 2017 (1).jpg",
     ],
   },
@@ -161,8 +164,10 @@ export const members: Member[] = [
       "Mina Sharon Myoui 名井 南 2024 07.jpg",
       "Mina Sharon Myoui 名井 南 2024 01.png",
       "Mina H&M Rokh 1.jpg",
+      "Mina Myoui.jpg",
       "Myoui Mina at WFMF concert in September 2016 01.jpg",
-      "Myoui Mina performing at SAC 2016 01.jpg",
+      "Myoui Mina at WFMF concert in September 2016 02.jpg",
+      "Myoui Mina performing at SAC 2016 03.jpg",
     ],
   },
   {
@@ -181,6 +186,8 @@ export const members: Member[] = [
     ],
     images: [
       "DAHYUN (다현) – 2024.02.12 – P1.png",
+      "Kim Dahyun at the KBS Music Bank 2019.png",
+      "Kim Da-hyun at Golden Disk Awards on January 5, 2019.png",
       "DAHYUN (다현) – 2024.02.12 – P5.png",
       "DAHYUN (다현) – 2024.02.12 – P4.png",
       "DAHYUN (다현) – 2024.02.12 – P2.png",

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { members, type Member } from "../data/members";
 import MemberImage from "./MemberImage";
 
@@ -28,16 +28,13 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-function makeQuestion(prevId?: string): Question {
-  let answer = pickRandom(members);
-  // 尽量不连续出同一个人
-  if (prevId && members.length > 1) {
-    let guard = 0;
-    while (answer.id === prevId && guard < 10) {
-      answer = pickRandom(members);
-      guard++;
-    }
-  }
+const AUTO_NEXT_MS = 1100;
+
+/** 避免最近出现过的成员，增加随机性 */
+function makeQuestion(recentIds: string[] = []): Question {
+  const pool = members.filter((m) => !recentIds.includes(m.id));
+  const answer = pickRandom(pool.length ? pool : members);
+
   const distractors = shuffle(members.filter((m) => m.id !== answer.id)).slice(
     0,
     3
@@ -48,7 +45,14 @@ function makeQuestion(prevId?: string): Question {
 }
 
 export default function Quiz() {
-  const [question, setQuestion] = useState<Question>(() => makeQuestion());
+  const recentRef = useRef<string[]>([]);
+  const timerRef = useRef<number | undefined>(undefined);
+
+  const [question, setQuestion] = useState<Question>(() => {
+    const q = makeQuestion();
+    recentRef.current = [q.member.id];
+    return q;
+  });
   const [selected, setSelected] = useState<string | null>(null);
   const [stats, setStats] = useState<Stats>({
     total: 0,
@@ -60,6 +64,21 @@ export default function Quiz() {
 
   const answered = selected !== null;
   const isCorrect = answered && selected === question.member.id;
+
+  const next = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = undefined;
+    }
+    setQuestion(() => {
+      const q = makeQuestion(recentRef.current);
+      // 记录最近 3 位成员，避免短期内重复
+      recentRef.current = [q.member.id, ...recentRef.current].slice(0, 3);
+      return q;
+    });
+    setSelected(null);
+    setCelebrate(false);
+  }, []);
 
   const handleSelect = useCallback(
     (id: string) => {
@@ -77,18 +96,20 @@ export default function Quiz() {
       });
       if (right) {
         setCelebrate(true);
+        timerRef.current = window.setTimeout(next, AUTO_NEXT_MS);
       }
     },
-    [answered, question.member.id]
+    [answered, question.member.id, next]
   );
 
-  const next = useCallback(() => {
-    setQuestion((q) => makeQuestion(q.member.id));
-    setSelected(null);
-    setCelebrate(false);
+  // 卸载时清理定时器
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, []);
 
-  // 键盘支持：1-4 选项，空格/回车下一题
+  // 键盘：1-4 选项，空格/回车 下一题（答错时）
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!answered && /^[1-4]$/.test(e.key)) {
@@ -174,9 +195,7 @@ export default function Quiz() {
                 className={`option ${state}`}
                 onClick={() => handleSelect(opt.id)}
                 disabled={answered}
-                style={
-                  !answered ? { borderColor: `${opt.color}` } : undefined
-                }
+                style={!answered ? { borderColor: `${opt.color}` } : undefined}
               >
                 <span className="option-idx">{i + 1}</span>
                 <span className="option-name">{opt.nameZh}</span>
@@ -186,11 +205,17 @@ export default function Quiz() {
           })}
         </div>
 
-        {answered && (
-          <div className={`feedback ${isCorrect ? "good" : "bad"}`}>
+        {answered && isCorrect && (
+          <div className="feedback good feedback--mini">
             <div className="feedback-head">
-              {isCorrect ? "答对啦！太棒了 🎉" : "差一点～她是 👇"}
+              答对啦！是 {question.member.emoji} {question.member.nameZh} —— 自动下一题中…
             </div>
+          </div>
+        )}
+
+        {answered && !isCorrect && (
+          <div className="feedback bad">
+            <div className="feedback-head">差一点～她是 👇</div>
             <div className="feedback-answer">
               <span className="feedback-emoji">{question.member.emoji}</span>
               <strong>{question.member.nameZh}</strong>
@@ -214,7 +239,8 @@ export default function Quiz() {
       </div>
 
       <p className="kbd-hint">
-        小提示：可用键盘 <kbd>1</kbd>–<kbd>4</kbd> 选答案，<kbd>空格</kbd> 下一题
+        小提示：可用键盘 <kbd>1</kbd>–<kbd>4</kbd> 选答案，答错后 <kbd>空格</kbd>{" "}
+        看下一题；答对会自动跳题
       </p>
     </div>
   );
